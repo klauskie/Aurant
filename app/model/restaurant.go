@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"strconv"
 
 	"app/config"
 )
@@ -14,6 +15,7 @@ type Restaurant struct {
 	Name string `json:"name"`
 }
 
+// SetData : post stream into db
 func (res *Restaurant) SetData(stream io.Reader) {
 	decoder := json.NewDecoder(stream)
 	err := decoder.Decode(&res)
@@ -28,11 +30,6 @@ func (res *Restaurant) SetData(stream io.Reader) {
 	}
 }
 
-func (res *Restaurant) GetData(resID int) {
-
-	selectFromDB(resID)
-}
-
 func insertIntoDB(resName string) error {
 	_, err := config.DB.Exec("INSERT INTO restaurant(name) VALUES (?)", resName)
 	if err != nil {
@@ -41,21 +38,39 @@ func insertIntoDB(resName string) error {
 	return nil
 }
 
-func selectFromDB(resID int) {
-	// Execute the query
-	results, err := config.DB.Query("SELECT * FROM restaurant WHERE rest_id = ?", resID)
+// GetData : call getAllRestaurants
+func (res *Restaurant) GetData() ([]byte, error) {
+
+	data, err := getAllRestaurants()
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		log.Fatal("getAllRestaurants error: ", err)
+	}
+	output, err2 := json.Marshal(data)
+	if err2 != nil {
+		log.Fatal("Encoding error: ", err2)
+	}
+	return output, err2
+
+}
+
+// getAllRestaurants : return map with restaurants
+func getAllRestaurants() (map[string]Restaurant, error) {
+	m := make(map[string]Restaurant)
+	rows, err := config.DB.Query("SELECT * FROM restaurant")
+	if err != nil {
+		return m, err
+	}
+	for rows.Next() {
+		var res Restaurant
+
+		err := rows.Scan(&res.ID, &res.Name)
+		if err != nil {
+			return m, err
+		}
+
+		strID := strconv.Itoa(res.ID)
+		m[strID] = res
 	}
 
-	for results.Next() {
-		var res Restaurant
-		// for each row, scan the result into our tag composite object
-		err = results.Scan(&res.ID, &res.Name)
-		if err != nil {
-			panic(err.Error()) // proper error handling instead of panic in your app
-		}
-		// and then print out the tag's Name attribute
-		log.Printf(res.Name)
-	}
+	return m, nil
 }
