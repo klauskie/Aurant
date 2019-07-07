@@ -11,10 +11,19 @@ import (
 
 // Item schema for db
 type Item struct {
-	ID     int    `json:"item_id"`
-	RestID int    `json:"rest_id"`
-	Name   string `json:"name"`
-	Price  string `json:"price"`
+	ID         int         `json:"item_id"`
+	RestID     int         `json:"rest_id"`
+	Name       string      `json:"name"`
+	Price      string      `json:"price"`
+	Attributes []Attribute `json:"attributes"`
+}
+
+// Attribute schema
+type Attribute struct {
+	ItemID int    `json:"item_id"`
+	AttID  int    `json:"att_id"`
+	Label  string `json:"label"`
+	Value  string `json:"value"`
 }
 
 // SetData : post stream into db
@@ -70,9 +79,34 @@ func getAllItems() (map[string]Item, error) {
 			return m, err
 		}
 
+		item.Attributes, err = getAttributes(item.ID)
+		if err != nil {
+			return m, err
+		}
+
 		strID := strconv.Itoa(item.ID)
 		m[strID] = item
 	}
 
 	return m, nil
+}
+
+func getAttributes(itemID int) ([]Attribute, error) {
+	var s []Attribute
+
+	rows, err := config.DB.Query("SELECT item_id, a.att_id, a.value, item_attribute.value FROM item_attribute JOIN attribute_value a ON item_attribute.att_id = a.att_id WHERE item_id = ?", itemID)
+	if err != nil {
+		return s, err
+	}
+	for rows.Next() {
+		var att Attribute
+
+		err := rows.Scan(&att.ItemID, &att.AttID, &att.Label, &att.Value)
+		if err != nil {
+			return s, err
+		}
+
+		s = append(s, att)
+	}
+	return s, nil
 }
