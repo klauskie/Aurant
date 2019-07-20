@@ -143,7 +143,7 @@ func getAllItems() (map[string]Item, error) {
 func getAttributes(itemID int) ([]Attribute, error) {
 	var s []Attribute
 
-	rows, err := config.DB.Query("SELECT item_id, a.att_id, a.value, item_attribute.value FROM item_attribute JOIN attribute_value a ON item_attribute.att_id = a.att_id WHERE item_id = ?", itemID)
+	rows, err := config.DB.Query("SELECT item_id, a.att_id, a.label, item_attribute.value FROM item_attribute JOIN attribute_value a ON item_attribute.att_id = a.att_id WHERE item_id = ?", itemID)
 	if err != nil {
 		return s, err
 	}
