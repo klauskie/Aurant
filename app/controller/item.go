@@ -32,6 +32,9 @@ func SetItem(w http.ResponseWriter, r *http.Request) {
 func SetAttribute(w http.ResponseWriter, r *http.Request) {
 	var att model.Attribute
 
-	att.SetData(r.Body)
+	err := att.SetData(r.Body)
+	if err != nil {
+		fmt.Fprintln(w, err)
+	}
 	fmt.Fprintln(w, "yey")
 }

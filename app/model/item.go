@@ -42,7 +42,7 @@ func (item *Item) SetData(stream io.Reader) {
 }
 
 // SetData :  set data for new attribute
-func (att *Attribute) SetData(stream io.Reader) {
+func (att *Attribute) SetData(stream io.Reader) error {
 	decoder := json.NewDecoder(stream)
 	err := decoder.Decode(&att)
 	if err != nil {
@@ -52,8 +52,9 @@ func (att *Attribute) SetData(stream io.Reader) {
 
 	err = att.insertIntoDB()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 func (att *Attribute) insertIntoDB() error {
@@ -70,6 +71,13 @@ func (att *Attribute) insertIntoDB() error {
 	if !tempLabel.Valid {
 		_, err = config.DB.Exec("INSERT INTO attribute_value(value) VALUES (?)", att.Label)
 		if err != nil {
+			return err
+		}
+
+		row = config.DB.QueryRow("SELECT att_id FROM attribute_value where value = ? ORDER BY att_id DESC;", att.Label)
+		err = row.Scan(&att.AttID)
+
+		if err != nil && err.Error() != "sql: no rows in result set" {
 			return err
 		}
 	}
