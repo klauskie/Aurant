@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"app/model"
+	"../model"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,10 +20,18 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 }
 
-// SetItem : Insert restaurant
+// SetItem : Insert item
 func SetItem(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
 
 	item.SetData(r.Body)
+	fmt.Fprintln(w, "yey")
+}
+
+// SetAttribute : Insert attrubute
+func SetAttribute(w http.ResponseWriter, r *http.Request) {
+	var att model.Attribute
+
+	att.SetData(r.Body)
 	fmt.Fprintln(w, "yey")
 }

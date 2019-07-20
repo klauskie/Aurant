@@ -6,7 +6,7 @@ import (
 	"log"
 	"strconv"
 
-	"app/config"
+	"../config"
 )
 
 // Restaurant schema for db

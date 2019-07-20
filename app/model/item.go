@@ -6,7 +6,7 @@ import (
 	"log"
 	"strconv"
 
-	"app/config"
+	"../config"
 )
 
 // Item schema for db
@@ -39,6 +39,46 @@ func (item *Item) SetData(stream io.Reader) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// SetData :  set data for new attribute
+func (att *Attribute) SetData(stream io.Reader) {
+	decoder := json.NewDecoder(stream)
+	err := decoder.Decode(&att)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(att.Label)
+
+	err = att.insertIntoDB()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (att *Attribute) insertIntoDB() error {
+
+	tempLabel := config.NullString
+
+	row := config.DB.QueryRow("SELECT att_id FROM attribute_value WHERE att_id = ?", att.AttID)
+	err := row.Scan(&tempLabel)
+
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		return err
+	}
+
+	if !tempLabel.Valid {
+		_, err = config.DB.Exec("INSERT INTO attribute_value(value) VALUES (?)", att.Label)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = config.DB.Exec("INSERT INTO item_attribute(item_id, att_id, value) VALUES (?,?,?)", att.ItemID, att.AttID, att.Value)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (item *Item) insertIntoDB() error {
