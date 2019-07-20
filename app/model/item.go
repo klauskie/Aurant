@@ -22,6 +22,7 @@ type Item struct {
 type Attribute struct {
 	ItemID int    `json:"item_id"`
 	AttID  int    `json:"att_id"`
+	RestID  int    `json:"rest_id"`
 	Label  string `json:"label"`
 	Value  string `json:"value"`
 }
@@ -69,12 +70,12 @@ func (att *Attribute) insertIntoDB() error {
 	}
 
 	if !tempLabel.Valid {
-		_, err = config.DB.Exec("INSERT INTO attribute_value(value) VALUES (?)", att.Label)
+		_, err = config.DB.Exec("INSERT INTO attribute_value(label, rest_id) VALUES (?,?)", att.Label, att.RestID)
 		if err != nil {
 			return err
 		}
 
-		row = config.DB.QueryRow("SELECT att_id FROM attribute_value where value = ? ORDER BY att_id DESC;", att.Label)
+		row = config.DB.QueryRow("SELECT att_id FROM attribute_value where rest_id = ? AND label = ? ORDER BY att_id DESC;", att.RestID, att.Label)
 		err = row.Scan(&att.AttID)
 
 		if err != nil && err.Error() != "sql: no rows in result set" {
