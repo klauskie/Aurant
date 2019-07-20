@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"strconv"
 
@@ -30,6 +31,21 @@ func (order *Order) GetData() ([]byte, error) {
 	return output, err2
 }
 
+// SetData : post stream into order table
+func (order *Order) SetData(stream io.Reader) error {
+	decoder := json.NewDecoder(stream)
+	err := decoder.Decode(&order)
+	if err != nil {
+		panic(err)
+	}
+
+	err = order.insertIntoDB()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // getAllOrders : return map with orders
 func getAllOrders() (map[string]Order, error) {
 	m := make(map[string]Order)
@@ -50,4 +66,12 @@ func getAllOrders() (map[string]Order, error) {
 	}
 
 	return m, nil
+}
+
+func (order *Order) insertIntoDB() error {
+	_, err := config.DB.Exec("INSERT INTO `order`(item_id, rest_id, client_id, state, date) VALUES (?,?,?,?,?)", order.ItemID, order.RestID, order.ClientID, order.State, order.Date)
+	if err != nil {
+		return err
+	}
+	return nil
 }

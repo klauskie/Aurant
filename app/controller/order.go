@@ -2,6 +2,7 @@ package controller
 
 import (
 	"../model"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -17,6 +18,19 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
+}
+
+// SetOrder : Insert order
+func SetOrder(w http.ResponseWriter, r *http.Request) {
+	var order model.Order
+
+	err := order.SetData(r.Body)
+
+	if err != nil {
+		fmt.Fprintln(w, err)
+	}
+
+	fmt.Fprintln(w, "yey")
 }
 
 
