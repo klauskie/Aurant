@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"strconv"
@@ -89,6 +90,28 @@ func (item *Item) SetData(stream io.Reader) {
 	}
 }
 
+// UpdateData : post stream into db
+func (item *Item) UpdateData(stream io.Reader, itemID string) error {
+	decoder := json.NewDecoder(stream)
+	err := decoder.Decode(&item)
+	if err != nil {
+		return err
+	}
+
+	tempID,_ := strconv.Atoi(itemID)
+
+	if item.ID != tempID {
+		return errors.New("Item IDs does not match.")
+	}
+
+	err = item.updateItemAction()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // SetData :  set data for new attribute
 func (att *Attribute) SetData(stream io.Reader) error {
 	decoder := json.NewDecoder(stream)
@@ -105,6 +128,22 @@ func (att *Attribute) SetData(stream io.Reader) error {
 	return nil
 }
 
+// UpdateData :  update data for given attribute
+func (att *Attribute) UpdateData(stream io.Reader) error {
+	decoder := json.NewDecoder(stream)
+	err := decoder.Decode(&att)
+	if err != nil {
+		panic(err)
+	}
+
+	err = att.updateAttributeData()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// insertIntoDB : see if the attribute exists (creates a new one if it doesn't), then maps it to the item
 func (att *Attribute) insertIntoDB() error {
 
 	var tempLabel sql.NullString
@@ -137,6 +176,35 @@ func (att *Attribute) insertIntoDB() error {
 	return nil
 }
 
+// updateAttributeData : update the fields if necessary
+func (att *Attribute) updateAttributeData() error {
+
+	var actualAtt Attribute
+
+	row := config.DB.QueryRow("SELECT item_id, ia.att_id, rest_id, label, value from attribute_value join item_attribute ia ON attribute_value.att_id = ia.att_id where item_id = ? AND ia.att_id = ?", att.ItemID, att.AttID)
+	err := row.Scan(&actualAtt.ItemID, &actualAtt.AttID, &actualAtt.RestID, &actualAtt.Label, &actualAtt.Value)
+	if err != nil {
+		return err
+	}
+
+	if actualAtt.Label != att.Label {
+		_, err = config.DB.Exec("UPDATE attribute_value SET label = ? WHERE att_id = ?", att.Label, att.AttID)
+		if err != nil {
+			return err
+		}
+	}
+
+	if actualAtt.Value != att.Value {
+		_, err = config.DB.Exec("UPDATE item_attribute SET value = ? WHERE item_id = ? AND att_id = ?", att.Value, att.ItemID, att.AttID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
 func (item *Item) insertIntoDB() error {
 	_, err := config.DB.Exec("INSERT INTO Item(rest_id, name, price) VALUES (?,?,?)", item.RestID, item.Name, item.Price)
 	if err != nil {
@@ -145,6 +213,13 @@ func (item *Item) insertIntoDB() error {
 	return nil
 }
 
+func (item *Item) updateItemAction() error {
+	_, err := config.DB.Exec("UPDATE Item SET name = ?, price = ? WHERE item_id = ?", item.Name, item.Price, item.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 // getAllItems : return map with items
 func getAllItems() (map[string]Item, error) {
@@ -179,6 +254,7 @@ func getItemByID(id int) (map[string]Item, error) {
 	return scanRows(rows)
 }
 
+// scanRows : scan rows and pass it into an object
 func scanRows(rows *sql.Rows) (map[string]Item, error) {
 	m := make(map[string]Item)
 

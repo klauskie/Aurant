@@ -59,11 +59,37 @@ func SetItem(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "yey")
 }
 
+// UpdateItem : Update item by ID
+func UpdateItem(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	vars := mux.Vars(r)
+
+	err := item.UpdateData(r.Body, vars["item_id"])
+
+	if err != nil {
+		fmt.Fprintln(w, err)
+	}
+
+	fmt.Fprintln(w, "yey")
+}
+
 // SetAttribute : Insert attrubute
 func SetAttribute(w http.ResponseWriter, r *http.Request) {
 	var att model.Attribute
 
 	err := att.SetData(r.Body)
+	if err != nil {
+		fmt.Fprintln(w, err)
+	}
+	fmt.Fprintln(w, "yey")
+}
+
+// UpdateAttribute : Update attrubute
+func UpdateAttribute(w http.ResponseWriter, r *http.Request) {
+	var att model.Attribute
+
+	err := att.UpdateData(r.Body)
 	if err != nil {
 		fmt.Fprintln(w, err)
 	}
