@@ -3,6 +3,7 @@ package controller
 import (
 	"../model"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
@@ -12,6 +13,36 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
 
 	output, err := item.GetData()
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
+
+// GetItemsByRestaurant : List of items by restaurant
+func GetItemsByRestaurant(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	vars := mux.Vars(r)
+
+	output, err := item.GetDataByRestID(vars["rest_id"])
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
+
+// GetItemByID : item detail by ID
+func GetItemByID(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	vars := mux.Vars(r)
+
+	output, err := item.GetDataByID(vars["item_id"])
 	if err != nil {
 		log.Fatal("Encoding error: ", err)
 	}

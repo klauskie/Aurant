@@ -10,9 +10,6 @@ import (
 // DB : database variable
 var DB *sql.DB
 
-// NullString : sql.NullString
-var NullString sql.NullString
-
 func init() {
 	var err error
 	DB, err = sql.Open("mysql", "db_user:password@tcp(172.25.0.3:3306)/aurant_db")

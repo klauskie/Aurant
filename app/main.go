@@ -16,6 +16,8 @@ func main() {
 	r.HandleFunc("/restaurant", controller.SetRestaurant).Methods("POST")
 	r.HandleFunc("/item", controller.GetItems).Methods("GET")
 	r.HandleFunc("/item", controller.SetItem).Methods("POST")
+	r.HandleFunc("/item/restaurant/{rest_id}", controller.GetItemsByRestaurant).Methods("GET")
+	r.HandleFunc("/item/detail/{item_id}", controller.GetItemByID).Methods("GET")
 	r.HandleFunc("/attribute", controller.SetAttribute).Methods("POST")
 	r.HandleFunc("/orders", controller.GetOrders).Methods("GET")
 	r.HandleFunc("/order", controller.SetOrder).Methods("POST")

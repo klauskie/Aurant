@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"log"
@@ -25,6 +26,52 @@ type Attribute struct {
 	RestID  int    `json:"rest_id"`
 	Label  string `json:"label"`
 	Value  string `json:"value"`
+}
+
+// GetData : call getAllItems
+func (item *Item) GetData() ([]byte, error) {
+
+	data, err := getAllItems()
+	if err != nil {
+		log.Fatal("getAllItems error: ", err)
+	}
+	output, err2 := json.Marshal(data)
+	if err2 != nil {
+		log.Fatal("Encoding error: ", err2)
+	}
+	return output, err2
+}
+
+// GetDataByRestID : call getAllItemsByRestID
+func (item *Item) GetDataByRestID(id string) ([]byte, error) {
+
+	usable_id, _ := strconv.Atoi(id)
+
+	data, err := getAllItemsByRestID(usable_id)
+	if err != nil {
+		log.Fatal("getAllItems error: ", err)
+	}
+	output, err2 := json.Marshal(data)
+	if err2 != nil {
+		log.Fatal("Encoding error: ", err2)
+	}
+	return output, err2
+}
+
+// GetDataByID : call getItemByID
+func (item *Item) GetDataByID(id string) ([]byte, error) {
+
+	usable_id, _ := strconv.Atoi(id)
+
+	data, err := getItemByID(usable_id)
+	if err != nil {
+		log.Fatal("getAllItems error: ", err)
+	}
+	output, err2 := json.Marshal(data)
+	if err2 != nil {
+		log.Fatal("Encoding error: ", err2)
+	}
+	return output, err2
 }
 
 // SetData : post stream into db
@@ -60,7 +107,7 @@ func (att *Attribute) SetData(stream io.Reader) error {
 
 func (att *Attribute) insertIntoDB() error {
 
-	tempLabel := config.NullString
+	var tempLabel sql.NullString
 
 	row := config.DB.QueryRow("SELECT att_id FROM attribute_value WHERE att_id = ?", att.AttID)
 	err := row.Scan(&tempLabel)
@@ -98,20 +145,6 @@ func (item *Item) insertIntoDB() error {
 	return nil
 }
 
-// GetData : call getAllItems
-func (item *Item) GetData() ([]byte, error) {
-
-	data, err := getAllItems()
-	if err != nil {
-		log.Fatal("getAllItems error: ", err)
-	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
-
-}
 
 // getAllItems : return map with items
 func getAllItems() (map[string]Item, error) {
@@ -120,6 +153,35 @@ func getAllItems() (map[string]Item, error) {
 	if err != nil {
 		return m, err
 	}
+
+	return scanRows(rows)
+}
+
+// getAllItemsByRestID : return map with items
+func getAllItemsByRestID(rest_id int) (map[string]Item, error) {
+	m := make(map[string]Item)
+	rows, err := config.DB.Query("SELECT * FROM Item WHERE rest_id = ?", rest_id)
+	if err != nil {
+		return m, err
+	}
+
+	return scanRows(rows)
+}
+
+// getAllItemsByRestID : return map with items
+func getItemByID(id int) (map[string]Item, error) {
+	m := make(map[string]Item)
+	rows, err := config.DB.Query("SELECT * FROM Item WHERE item_id = ?", id)
+	if err != nil {
+		return m, err
+	}
+
+	return scanRows(rows)
+}
+
+func scanRows(rows *sql.Rows) (map[string]Item, error) {
+	m := make(map[string]Item)
+
 	for rows.Next() {
 		var item Item
 
