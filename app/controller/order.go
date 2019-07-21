@@ -3,6 +3,7 @@ package controller
 import (
 	"../model"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
@@ -33,4 +34,30 @@ func SetOrder(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "yey")
 }
 
+// UpdateOrderState : update order
+func UpdateOrderState(w http.ResponseWriter, r *http.Request) {
+	var order model.Order
 
+	err := order.SetNewState(r.Body)
+
+	if err != nil {
+		fmt.Fprintln(w, err)
+	}
+
+	fmt.Fprintln(w, "yey")
+}
+
+// GetOrdersByState : update order
+func GetOrdersByState(w http.ResponseWriter, r *http.Request) {
+	var order model.Order
+
+	vars := mux.Vars(r)
+
+	output, err := order.GetDataByRestIDAndState(vars["rest_id"], vars["state"])
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}

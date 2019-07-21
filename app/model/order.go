@@ -1,10 +1,12 @@
 package model
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"log"
 	"strconv"
+	"time"
 
 	"../config"
 )
@@ -19,10 +21,29 @@ type Order struct {
 	Date     string  `json:"date"`
 }
 
+var timeLayout string = "2006-01-02 15:04:05"
+
+// GetData : get all orders
 func (order *Order) GetData() ([]byte, error) {
 	data, err := getAllOrders()
 	if err != nil {
 		log.Fatal("getAllOrders error: ", err)
+	}
+	output, err2 := json.Marshal(data)
+	if err2 != nil {
+		log.Fatal("Encoding error: ", err2)
+	}
+	return output, err2
+}
+
+// GetDataByRestIDAndState : call getAllItemsByRestID
+func (order *Order) GetDataByRestIDAndState(rest_id string, state string) ([]byte, error) {
+
+	usableID, _ := strconv.Atoi(rest_id)
+
+	data, err := getAllOrdersByRestIDAndState(usableID, state)
+	if err != nil {
+		log.Fatal("getAllItems error: ", err)
 	}
 	output, err2 := json.Marshal(data)
 	if err2 != nil {
@@ -46,6 +67,21 @@ func (order *Order) SetData(stream io.Reader) error {
 	return nil
 }
 
+// UpdateState : post stream into order table
+func (order *Order) SetNewState(stream io.Reader) error {
+	decoder := json.NewDecoder(stream)
+	err := decoder.Decode(&order)
+	if err != nil {
+		panic(err)
+	}
+
+	err = order.updateState()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // getAllOrders : return map with orders
 func getAllOrders() (map[string]Order, error) {
 	m := make(map[string]Order)
@@ -53,6 +89,24 @@ func getAllOrders() (map[string]Order, error) {
 	if err != nil {
 		return m, err
 	}
+	return scanRowsOrder(rows)
+}
+
+// getAllOrdersByRestIDAndState : return map with orders
+func getAllOrdersByRestIDAndState(rest_id int, state string) (map[string]Order, error) {
+	m := make(map[string]Order)
+	rows, err := config.DB.Query("SELECT * FROM `order` WHERE rest_id = ? AND state = ?", rest_id, state)
+	if err != nil {
+		return m, err
+	}
+	return scanRowsOrder(rows)
+}
+
+
+// scanRowsOrder : scan rows
+func scanRowsOrder(rows *sql.Rows) (map[string]Order, error) {
+	m := make(map[string]Order)
+
 	for rows.Next() {
 		var order Order
 
@@ -69,7 +123,15 @@ func getAllOrders() (map[string]Order, error) {
 }
 
 func (order *Order) insertIntoDB() error {
-	_, err := config.DB.Exec("INSERT INTO `order`(item_id, rest_id, client_id, state, date) VALUES (?,?,?,?,?)", order.ItemID, order.RestID, order.ClientID, order.State, order.Date)
+	_, err := config.DB.Exec("INSERT INTO `order`(item_id, rest_id, client_id, state, date) VALUES (?,?,?,?,?)", order.ItemID, order.RestID, order.ClientID, order.State, time.Now().Format(timeLayout))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (order *Order) updateState() error {
+	_, err := config.DB.Exec("UPDATE `order` SET state = ?, date = ? WHERE order_id = ?", order.State, time.Now().Format(timeLayout), order.ID)
 	if err != nil {
 		return err
 	}
