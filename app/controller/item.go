@@ -74,6 +74,21 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "yey")
 }
 
+// DeleteItem : delete item by ID
+func DeleteItem(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	vars := mux.Vars(r)
+
+	output, err := item.DeleteData(vars["item_id"])
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
+
 // SetAttribute : Insert attrubute
 func SetAttribute(w http.ResponseWriter, r *http.Request) {
 	var att model.Attribute

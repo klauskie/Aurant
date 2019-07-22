@@ -62,9 +62,9 @@ func (item *Item) GetDataByRestID(id string) ([]byte, error) {
 // GetDataByID : call getItemByID
 func (item *Item) GetDataByID(id string) ([]byte, error) {
 
-	usable_id, _ := strconv.Atoi(id)
+	usableID, _ := strconv.Atoi(id)
 
-	data, err := getItemByID(usable_id)
+	data, err := getItemByID(usableID)
 	if err != nil {
 		log.Fatal("getAllItems error: ", err)
 	}
@@ -110,6 +110,22 @@ func (item *Item) UpdateData(stream io.Reader, itemID string) error {
 	}
 
 	return nil
+}
+
+// DeleteData :
+func (item *Item) DeleteData(id string) ([]byte, error) {
+
+	usableID, _ := strconv.Atoi(id)
+
+	data, err := deleteItem(usableID)
+	if err != nil {
+		log.Fatal("deleteItem error: ", err)
+	}
+	output, err2 := json.Marshal(data)
+	if err2 != nil {
+		log.Fatal("Encoding error: ", err2)
+	}
+	return output, err2
 }
 
 // SetData :  set data for new attribute
@@ -296,4 +312,17 @@ func getAttributes(itemID int) ([]Attribute, error) {
 		s = append(s, att)
 	}
 	return s, nil
+}
+
+func deleteItem(id int) (map[string]string,error) {
+
+	message := make(map[string]string)
+
+	_, err := config.DB.Exec("DELETE FROM Item where item_id = ?", id)
+	if err != nil {
+		message["success"] = "false"
+		return message, err
+	}
+	message["success"] = "true"
+	return message, nil
 }

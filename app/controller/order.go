@@ -61,3 +61,18 @@ func GetOrdersByState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 }
+
+// UpdateOrderStateIncrement : update order status increment
+func UpdateOrderStateIncrement(w http.ResponseWriter, r *http.Request) {
+	var order model.Order
+
+	vars := mux.Vars(r)
+
+	output, err := order.UpdateStatusByOne(vars["order_id"])
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}

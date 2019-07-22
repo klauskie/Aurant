@@ -17,11 +17,18 @@ type Order struct {
 	ItemID 	 int     `json:"item_id"`
 	RestID 	 int     `json:"rest_id"`
 	ClientID int     `json:"client_id"`
-	State    string  `json:"state"`
+	State    int     `json:"state"`
 	Date     string  `json:"date"`
 }
 
 var timeLayout string = "2006-01-02 15:04:05"
+
+const (
+	new         = iota
+	on_progress = iota
+	delivered   = iota
+	closed      = iota
+)
 
 // GetData : get all orders
 func (order *Order) GetData() ([]byte, error) {
@@ -44,6 +51,22 @@ func (order *Order) GetDataByRestIDAndState(rest_id string, state string) ([]byt
 	data, err := getAllOrdersByRestIDAndState(usableID, state)
 	if err != nil {
 		log.Fatal("getAllItems error: ", err)
+	}
+	output, err2 := json.Marshal(data)
+	if err2 != nil {
+		log.Fatal("Encoding error: ", err2)
+	}
+	return output, err2
+}
+
+// UpdateStatusByOne : update Status by one
+func (order *Order) UpdateStatusByOne(orderID string) ([]byte, error) {
+
+	usableID, _ := strconv.Atoi(orderID)
+
+	data, err := incrementStateByOne(usableID)
+	if err != nil {
+		log.Fatal("incrementStateByOne error: ", err)
 	}
 	output, err2 := json.Marshal(data)
 	if err2 != nil {
@@ -123,7 +146,7 @@ func scanRowsOrder(rows *sql.Rows) (map[string]Order, error) {
 }
 
 func (order *Order) insertIntoDB() error {
-	_, err := config.DB.Exec("INSERT INTO `order`(item_id, rest_id, client_id, state, date) VALUES (?,?,?,?,?)", order.ItemID, order.RestID, order.ClientID, order.State, time.Now().Format(timeLayout))
+	_, err := config.DB.Exec("INSERT INTO `order`(item_id, rest_id, client_id, state, date) VALUES (?,?,?,?,?)", order.ItemID, order.RestID, order.ClientID, new, time.Now().Format(timeLayout))
 	if err != nil {
 		return err
 	}
@@ -136,4 +159,29 @@ func (order *Order) updateState() error {
 		return err
 	}
 	return nil
+}
+
+func incrementStateByOne (orderID int) (map[string]string, error) {
+
+	var actualState int
+	message := make(map[string]string)
+
+	row := config.DB.QueryRow("SELECT state FROM `order` WHERE order_id = ?", orderID)
+	err := row.Scan(&actualState)
+
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		message["state"] = ""
+		return message, err
+	}
+
+	if actualState <= closed {
+		actualState += 1
+		_, err := config.DB.Exec("UPDATE `order` SET state = ?, date = ? WHERE order_id = ?", actualState, time.Now().Format(timeLayout), orderID)
+		if err != nil {
+			message["state"] = ""
+			return message, err
+		}
+	}
+	message["state"] = strconv.Itoa(actualState)
+	return message,nil
 }
