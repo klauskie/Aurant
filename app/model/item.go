@@ -156,8 +156,8 @@ func (item *Item) updateItemAction() error {
 }
 
 // getAllItems : return map with items
-func getAllItems() (map[string]Item, error) {
-	m := make(map[string]Item)
+func getAllItems() ([]*Item, error) {
+	var m []*Item
 	rows, err := config.DB.Query("SELECT * FROM ITEM ORDER BY category_id")
 	if err != nil {
 		return m, err
@@ -167,8 +167,8 @@ func getAllItems() (map[string]Item, error) {
 }
 
 // getAllItemsByRestID : return map with items
-func getAllItemsByRestID(rest_id int) (map[string]Item, error) {
-	m := make(map[string]Item)
+func getAllItemsByRestID(rest_id int) ([]*Item, error) {
+	var m []*Item
 	rows, err := config.DB.Query("SELECT * FROM ITEM WHERE rest_id = ? ORDER BY category_id", rest_id)
 	if err != nil {
 		return m, err
@@ -178,8 +178,8 @@ func getAllItemsByRestID(rest_id int) (map[string]Item, error) {
 }
 
 // getItemByID : return map with items
-func getItemByID(id int) (map[string]Item, error) {
-	m := make(map[string]Item)
+func getItemByID(id int) ([]*Item, error) {
+	var m []*Item
 	rows, err := config.DB.Query("SELECT * FROM ITEM WHERE item_id = ?", id)
 	if err != nil {
 		return m, err
@@ -189,8 +189,8 @@ func getItemByID(id int) (map[string]Item, error) {
 }
 
 // scanRows : scan rows and pass it into an object
-func scanRows(rows *sql.Rows) (map[string]Item, error) {
-	m := make(map[string]Item)
+func scanRows(rows *sql.Rows) ([]*Item, error) {
+	var m []*Item
 
 	for rows.Next() {
 		var item Item
@@ -200,8 +200,7 @@ func scanRows(rows *sql.Rows) (map[string]Item, error) {
 			return m, err
 		}
 
-		strID := strconv.Itoa(item.ID)
-		m[strID] = item
+		m = append(m, &item)
 	}
 
 	return m, nil
@@ -222,8 +221,8 @@ func deleteItem(id int) (map[string]string,error) {
 }
 
 // getCategoriesByRestID : return map with categories
-func getCategoriesByRestID(id int) (map[string]Category, error) {
-	m := make(map[string]Category)
+func getCategoriesByRestID(id int) ([]*Category, error) {
+	var m []*Category
 	rows, err := config.DB.Query("SELECT * from CATEGORY where rest_id = ?", id)
 	if err != nil {
 		return m, err
@@ -237,8 +236,7 @@ func getCategoriesByRestID(id int) (map[string]Category, error) {
 			return m, err
 		}
 
-		strID := strconv.Itoa(cate.ID)
-		m[strID] = cate
+		m = append(m, &cate)
 	}
 
 	return m, nil

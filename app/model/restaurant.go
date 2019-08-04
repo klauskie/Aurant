@@ -1,12 +1,10 @@
 package model
 
 import (
+	"../config"
 	"encoding/json"
 	"io"
 	"log"
-	"strconv"
-
-	"../config"
 )
 
 // Restaurant schema for db
@@ -56,8 +54,8 @@ func (res *Restaurant) GetData() ([]byte, error) {
 }
 
 // getAllRestaurants : return map with restaurants
-func getAllRestaurants() (map[string]Restaurant, error) {
-	m := make(map[string]Restaurant)
+func getAllRestaurants() ([]*Restaurant, error) {
+	var m []*Restaurant
 	rows, err := config.DB.Query("SELECT * FROM RESTAURANT")
 	if err != nil {
 		return m, err
@@ -70,8 +68,7 @@ func getAllRestaurants() (map[string]Restaurant, error) {
 			return m, err
 		}
 
-		strID := strconv.Itoa(res.ID)
-		m[strID] = res
+		m = append(m, &res)
 	}
 
 	return m, nil
