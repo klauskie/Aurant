@@ -76,3 +76,18 @@ func UpdateOrderStateIncrement(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 }
+
+// GetOrdersByClientAndRest : get open orders by client and rest
+func GetOrdersByClientAndRest(w http.ResponseWriter, r *http.Request) {
+	var order model.Cart
+
+	vars := mux.Vars(r)
+
+	output, err := order.GetDataByClientAndRestID(vars["email"], vars["rest_id"])
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}

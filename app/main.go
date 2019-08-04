@@ -28,7 +28,7 @@ func main() {
 	r.HandleFunc("/order/update", controller.UpdateOrderState).Methods("POST")
 	r.HandleFunc("/order/update/increment/{order_id}", controller.UpdateOrderStateIncrement).Methods("GET")
 	r.HandleFunc("/order/restaurant/{rest_id}/state/{state}", controller.GetOrdersByState).Methods("GET")
-	// get order by client [filter by restaurant]
+	r.HandleFunc("/order/client/{email}/restaurant/{rest_id}", controller.GetOrdersByClientAndRest).Methods("GET")
 
 	http.Handle("/", r)
 	fmt.Println("Starting up on 8080")
