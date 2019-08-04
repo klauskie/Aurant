@@ -51,6 +51,22 @@ func GetItemByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 }
 
+// GetCategoriesByRestaurant : return categories grouped by category_id
+func GetCategoriesByRestaurant(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	vars := mux.Vars(r)
+
+	output, err := item.GetCategoriesByRestaurant(vars["rest_id"])
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
+
+
 // SetItem : Insert item
 func SetItem(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
@@ -63,9 +79,7 @@ func SetItem(w http.ResponseWriter, r *http.Request) {
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
 
-	vars := mux.Vars(r)
-
-	err := item.UpdateData(r.Body, vars["item_id"])
+	err := item.UpdateData(r.Body)
 
 	if err != nil {
 		fmt.Fprintln(w, err)
@@ -87,26 +101,4 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
-}
-
-// SetAttribute : Insert attrubute
-func SetAttribute(w http.ResponseWriter, r *http.Request) {
-	var att model.Attribute
-
-	err := att.SetData(r.Body)
-	if err != nil {
-		fmt.Fprintln(w, err)
-	}
-	fmt.Fprintln(w, "yey")
-}
-
-// UpdateAttribute : Update attrubute
-func UpdateAttribute(w http.ResponseWriter, r *http.Request) {
-	var att model.Attribute
-
-	err := att.UpdateData(r.Body)
-	if err != nil {
-		fmt.Fprintln(w, err)
-	}
-	fmt.Fprintln(w, "yey")
 }

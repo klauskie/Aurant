@@ -11,27 +11,34 @@ import (
 	"../config"
 )
 
-// Order schema for db
-type Order struct {
-	ID       int     `json:"order_id"`
-	ItemID 	 int     `json:"item_id"`
+// Cart schema for db
+type Cart struct {
+	ID       int     `json:"cart_id"`
 	RestID 	 int     `json:"rest_id"`
-	ClientID int     `json:"client_id"`
-	State    int     `json:"state"`
-	Date     string  `json:"date"`
+	ClientID int     `json:"email"`
+	State    int     `json:"state_id"`
+	Date     string  `json:"datetime"`
+}
+
+// Cart_Item schema for db
+type CartItem struct {
+	ID       int     `json:"id"`
+	CartID 	 int     `json:"cart_id"`
+	ItemID 	 int     `json:"item_id"`
+	AdInfo   string  `json:"additional_info"`
 }
 
 var timeLayout string = "2006-01-02 15:04:05"
 
 const (
-	new         = iota
-	on_progress = iota
-	delivered   = iota
-	closed      = iota
+	NEW         = iota
+	ON_PROGRESS = iota
+	DELIVERED   = iota
+	CLOSED      = iota
 )
 
 // GetData : get all orders
-func (order *Order) GetData() ([]byte, error) {
+func (cart *Cart) GetData() ([]byte, error) {
 	data, err := getAllOrders()
 	if err != nil {
 		log.Fatal("getAllOrders error: ", err)
@@ -44,7 +51,7 @@ func (order *Order) GetData() ([]byte, error) {
 }
 
 // GetDataByRestIDAndState : call getAllItemsByRestID
-func (order *Order) GetDataByRestIDAndState(rest_id string, state string) ([]byte, error) {
+func (order *Cart) GetDataByRestIDAndState(rest_id string, state string) ([]byte, error) {
 
 	usableID, _ := strconv.Atoi(rest_id)
 
@@ -60,7 +67,7 @@ func (order *Order) GetDataByRestIDAndState(rest_id string, state string) ([]byt
 }
 
 // UpdateStatusByOne : update Status by one
-func (order *Order) UpdateStatusByOne(orderID string) ([]byte, error) {
+func (order *Cart) UpdateStatusByOne(orderID string) ([]byte, error) {
 
 	usableID, _ := strconv.Atoi(orderID)
 
@@ -76,7 +83,7 @@ func (order *Order) UpdateStatusByOne(orderID string) ([]byte, error) {
 }
 
 // SetData : post stream into order table
-func (order *Order) SetData(stream io.Reader) error {
+func (order *Cart) SetData(stream io.Reader) error {
 	decoder := json.NewDecoder(stream)
 	err := decoder.Decode(&order)
 	if err != nil {
@@ -91,7 +98,7 @@ func (order *Order) SetData(stream io.Reader) error {
 }
 
 // UpdateState : post stream into order table
-func (order *Order) SetNewState(stream io.Reader) error {
+func (order *Cart) SetNewState(stream io.Reader) error {
 	decoder := json.NewDecoder(stream)
 	err := decoder.Decode(&order)
 	if err != nil {
@@ -106,9 +113,9 @@ func (order *Order) SetNewState(stream io.Reader) error {
 }
 
 // getAllOrders : return map with orders
-func getAllOrders() (map[string]Order, error) {
-	m := make(map[string]Order)
-	rows, err := config.DB.Query("SELECT * FROM `order`")
+func getAllOrders() (map[string]Cart, error) {
+	m := make(map[string]Cart)
+	rows, err := config.DB.Query("SELECT * FROM CART")
 	if err != nil {
 		return m, err
 	}
@@ -116,9 +123,9 @@ func getAllOrders() (map[string]Order, error) {
 }
 
 // getAllOrdersByRestIDAndState : return map with orders
-func getAllOrdersByRestIDAndState(rest_id int, state string) (map[string]Order, error) {
-	m := make(map[string]Order)
-	rows, err := config.DB.Query("SELECT * FROM `order` WHERE rest_id = ? AND state = ?", rest_id, state)
+func getAllOrdersByRestIDAndState(rest_id int, state string) (map[string]Cart, error) {
+	m := make(map[string]Cart)
+	rows, err := config.DB.Query("SELECT * FROM CART WHERE rest_id = ? AND state = ?", rest_id, state)
 	if err != nil {
 		return m, err
 	}
@@ -127,46 +134,46 @@ func getAllOrdersByRestIDAndState(rest_id int, state string) (map[string]Order, 
 
 
 // scanRowsOrder : scan rows
-func scanRowsOrder(rows *sql.Rows) (map[string]Order, error) {
-	m := make(map[string]Order)
+func scanRowsOrder(rows *sql.Rows) (map[string]Cart, error) {
+	m := make(map[string]Cart)
 
 	for rows.Next() {
-		var order Order
+		var cart Cart
 
-		err := rows.Scan(&order.ID, &order.ItemID, &order.RestID, &order.ClientID, &order.State, &order.Date)
+		err := rows.Scan(&cart.ID, &cart.RestID, &cart.ClientID, &cart.State, &cart.Date)
 		if err != nil {
 			return m, err
 		}
 
-		strID := strconv.Itoa(order.ID)
-		m[strID] = order
+		strID := strconv.Itoa(cart.ID)
+		m[strID] = cart
 	}
 
 	return m, nil
 }
 
-func (order *Order) insertIntoDB() error {
-	_, err := config.DB.Exec("INSERT INTO `order`(item_id, rest_id, client_id, state, date) VALUES (?,?,?,?,?)", order.ItemID, order.RestID, order.ClientID, new, time.Now().Format(timeLayout))
+func (order *Cart) insertIntoDB() error {
+	_, err := config.DB.Exec("INSERT INTO CART(rest_id, email, state_id, datetime) VALUES (?,?,?,?)", order.RestID, order.ClientID, NEW, time.Now().Format(timeLayout))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (order *Order) updateState() error {
-	_, err := config.DB.Exec("UPDATE `order` SET state = ?, date = ? WHERE order_id = ?", order.State, time.Now().Format(timeLayout), order.ID)
+func (order *Cart) updateState() error {
+	_, err := config.DB.Exec("UPDATE CART SET state_id = ?, date = ? WHERE order_id = ?", order.State, time.Now().Format(timeLayout), order.ID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func incrementStateByOne (orderID int) (map[string]string, error) {
+func incrementStateByOne (cartID int) (map[string]string, error) {
 
 	var actualState int
 	message := make(map[string]string)
 
-	row := config.DB.QueryRow("SELECT state FROM `order` WHERE order_id = ?", orderID)
+	row := config.DB.QueryRow("SELECT state_id FROM CART WHERE cart_id = ?", cartID)
 	err := row.Scan(&actualState)
 
 	if err != nil && err.Error() != "sql: no rows in result set" {
@@ -174,9 +181,9 @@ func incrementStateByOne (orderID int) (map[string]string, error) {
 		return message, err
 	}
 
-	if actualState <= closed {
+	if actualState <= CLOSED {
 		actualState += 1
-		_, err := config.DB.Exec("UPDATE `order` SET state = ?, date = ? WHERE order_id = ?", actualState, time.Now().Format(timeLayout), orderID)
+		_, err := config.DB.Exec("UPDATE CART SET state_id = ?, date = ? WHERE order_id = ?", actualState, time.Now().Format(timeLayout), cartID)
 		if err != nil {
 			message["state"] = ""
 			return message, err

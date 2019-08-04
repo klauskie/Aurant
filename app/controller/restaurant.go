@@ -24,6 +24,10 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 func SetRestaurant(w http.ResponseWriter, r *http.Request) {
 	var res model.Restaurant
 
-	res.SetData(r.Body)
+	err := res.SetData(r.Body)
+	if err != nil {
+		fmt.Fprintln(w, err)
+		return
+	}
 	fmt.Fprintln(w, "yey")
 }

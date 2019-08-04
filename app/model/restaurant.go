@@ -13,10 +13,11 @@ import (
 type Restaurant struct {
 	ID   int    `json:"rest_id"`
 	Name string `json:"name"`
+	Location string `json:"location"`
 }
 
 // SetData : post stream into db
-func (res *Restaurant) SetData(stream io.Reader) {
+func (res *Restaurant) SetData(stream io.Reader) error {
 	decoder := json.NewDecoder(stream)
 	err := decoder.Decode(&res)
 	if err != nil {
@@ -24,14 +25,15 @@ func (res *Restaurant) SetData(stream io.Reader) {
 	}
 	log.Println(res.Name)
 
-	err = insertIntoDB(res.Name)
+	err = res.insertIntoDB()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
-func insertIntoDB(resName string) error {
-	_, err := config.DB.Exec("INSERT INTO restaurant(name) VALUES (?)", resName)
+func (res *Restaurant) insertIntoDB() error {
+	_, err := config.DB.Exec("INSERT INTO RESTAURANT(name, location) VALUES (?,?)", res.Name, res.Location)
 	if err != nil {
 		return err
 	}
@@ -56,14 +58,14 @@ func (res *Restaurant) GetData() ([]byte, error) {
 // getAllRestaurants : return map with restaurants
 func getAllRestaurants() (map[string]Restaurant, error) {
 	m := make(map[string]Restaurant)
-	rows, err := config.DB.Query("SELECT * FROM restaurant")
+	rows, err := config.DB.Query("SELECT * FROM RESTAURANT")
 	if err != nil {
 		return m, err
 	}
 	for rows.Next() {
 		var res Restaurant
 
-		err := rows.Scan(&res.ID, &res.Name)
+		err := rows.Scan(&res.ID, &res.Name, &res.Location)
 		if err != nil {
 			return m, err
 		}

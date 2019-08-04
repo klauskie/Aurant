@@ -10,7 +10,7 @@ import (
 
 // GetOrders : List of orders
 func GetOrders(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+	var order model.Cart
 
 	output, err := order.GetData()
 	if err != nil {
@@ -23,7 +23,7 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 
 // SetOrder : Insert order
 func SetOrder(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+	var order model.Cart
 
 	err := order.SetData(r.Body)
 
@@ -36,7 +36,7 @@ func SetOrder(w http.ResponseWriter, r *http.Request) {
 
 // UpdateOrderState : update order
 func UpdateOrderState(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+	var order model.Cart
 
 	err := order.SetNewState(r.Body)
 
@@ -49,7 +49,7 @@ func UpdateOrderState(w http.ResponseWriter, r *http.Request) {
 
 // GetOrdersByState : update order
 func GetOrdersByState(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+	var order model.Cart
 
 	vars := mux.Vars(r)
 
@@ -64,7 +64,7 @@ func GetOrdersByState(w http.ResponseWriter, r *http.Request) {
 
 // UpdateOrderStateIncrement : update order status increment
 func UpdateOrderStateIncrement(w http.ResponseWriter, r *http.Request) {
-	var order model.Order
+	var order model.Cart
 
 	vars := mux.Vars(r)
 
