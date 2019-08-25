@@ -19,9 +19,12 @@ func main() {
 	r.HandleFunc("/item", controller.SetItem).Methods("POST")
 	r.HandleFunc("/item/restaurant/{rest_id}", controller.GetItemsByRestaurant).Methods("GET")
 	r.HandleFunc("/item/detail/{item_id}", controller.GetItemByID).Methods("GET")
+	r.HandleFunc("/item/enable/{item_id}", controller.EnableItem).Methods("GET")
+	r.HandleFunc("/item/disable/{item_id}", controller.DisableItem).Methods("GET")
 	r.HandleFunc("/item/update", controller.UpdateItem).Methods("POST")
 	r.HandleFunc("/item/delete/{item_id}", controller.DeleteItem).Methods("GET")
-	r.HandleFunc("/item/categories/{rest_id}", controller.GetCategoriesByRestaurant).Methods("GET")
+	r.HandleFunc("/item/category", controller.SetCategory).Methods("POST")
+	r.HandleFunc("/item/category/restaurant/{rest_id}", controller.GetCategoriesByRestaurant).Methods("GET")
 
 	r.HandleFunc("/order", controller.GetOrders).Methods("GET")
 	r.HandleFunc("/order", controller.SetOrder).Methods("POST")

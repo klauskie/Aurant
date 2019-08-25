@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // GetItems : List of items
@@ -75,6 +76,14 @@ func SetItem(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "yey")
 }
 
+// SetCategory : Insert category
+func SetCategory(w http.ResponseWriter, r *http.Request) {
+	var cate model.Category
+
+	cate.SetData(r.Body)
+	fmt.Fprintln(w, "yey")
+}
+
 // UpdateItem : Update item by ID
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
@@ -95,6 +104,40 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	output, err := item.DeleteData(vars["item_id"])
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
+
+// EnableItem : enable item by id
+func EnableItem(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	vars := mux.Vars(r)
+	usableID, _ := strconv.Atoi(vars["item_id"])
+	item.ID = usableID
+
+	output, err := item.Enabletor(true)
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
+
+// DisableItem : disable item by id
+func DisableItem(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	vars := mux.Vars(r)
+	usableID, _ := strconv.Atoi(vars["item_id"])
+	item.ID = usableID
+
+	output, err := item.Enabletor(false)
 	if err != nil {
 		log.Fatal("Encoding error: ", err)
 	}
