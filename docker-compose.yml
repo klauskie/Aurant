@@ -13,16 +13,6 @@ services:
     networks:
       lr_connect:
         ipv4_address: 172.25.0.2
-  admin:
-    container_name: aurant_admin
-    build: ./web
-    volumes:
-      - ./web:/home/node/app
-    ports:
-      - "4000:4000"
-    networks:
-      lr_connect:
-        ipv4_address: 172.25.0.4
   db:
     image: mysql:5.7
     container_name: aurant_db

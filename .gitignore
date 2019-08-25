@@ -1,3 +1,4 @@
 db_dumps/
 .idea/
 info/
+web/node_modules
