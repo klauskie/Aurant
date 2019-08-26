@@ -2,17 +2,18 @@ body {
     margin: 0;
     display: grid;
     grid-template-columns: min-content 1fr;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
 }
 
 div.container {
-    border: 2px solid rgb(100, 167, 255);
+    /*border: 2px solid blue;*/
 }
 
 div.flex-contaiener {
     display: flex;
     overflow: auto;
     height: 100%;
-    min-height: 600px;
 }
 
 div.top-bar {
@@ -21,7 +22,7 @@ div.top-bar {
     position: sticky;
     top:0;
     z-index: 1;
-    background-color: #ebf4ff;
+    background-color: #d7e8ff;
 }
 
 nav.sidebar {
@@ -35,13 +36,27 @@ nav.sidebar ul {
     margin:0;
     padding: 0;
     position: sticky;
-    top: 6rem;
+    top: 4rem;
 }
+
+/* Portrait and Landscape */
+@media only screen 
+  and (min-device-width: 320px) 
+  and (max-device-width: 480px)
+  and (-webkit-min-device-pixel-ratio: 2) {
+    nav.sidebar ul {
+        display: none;
+    }
+    body {
+        font-size: 3em;
+    }
+}
+
 
 nav.sidebar li a {
     display: block;
     padding: 0.5rem 2rem;
-    border: 1px solid #FFF;
+    border: 1px solid #29333c;
     text-decoration: none;
     color: white;
 }
@@ -49,3 +64,4 @@ nav.sidebar li a {
 div.main-content {
     height: 2000px;
 }
+
