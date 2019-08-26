@@ -8,10 +8,11 @@ const port = 4000
 app.engine('ejs', engines.ejs);
 app.set('views', './views');
 app.set('views engine', 'ejs');
+app.use(express.static(__dirname + '/public'));
 
 
 app.get('/', function(req, res){
-  
+  res.render('home.ejs')
 })
 
 app.get('/item', (req, res) => {
