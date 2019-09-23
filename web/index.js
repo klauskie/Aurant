@@ -11,13 +11,15 @@ app.set('views engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 
+const RESTAURANT_ID = 2;
+
 app.get('/', function(req, res){
   res.render('home.ejs')
 })
 
 app.get('/item', (req, res) => {
   console.log('/item')
-  request('http://localhost:8080/item', function (error, response, body) {
+  request('http://localhost:8080/item/restaurant/' + RESTAURANT_ID, function (error, response, body) {
     if (error != null) {
       res.send("error")
     }
