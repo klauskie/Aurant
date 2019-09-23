@@ -30,6 +30,20 @@ app.get('/item', (req, res) => {
     res.render('home.ejs', {info:info})
   });
 })
+
+app.get('/item/detail/:itemID', (req, res) => {
+  console.log('/item/details')
+  request('http://localhost:8080/item/detail/' + req.params.itemID, function (error, response, body) {
+    if (error != null) {
+      res.send("error")
+    }
+    if (response.statusCode != 200) {
+      res.send("not 200")
+    }
+    var item = JSON.parse(body);
+    res.render('details.ejs', {item:item})
+  });
+})
   
 
 app.listen(port, function () {

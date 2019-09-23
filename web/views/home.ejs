@@ -16,55 +16,22 @@
         </ul>
     </nav>
     <div class="container main-content">
-        <ul>
-            <% info.forEach(element => { %>
-                <li> <%= element.name %> </li>
-            <% }); %>
-        </ul>
+        <% let cats = info['categories'] %>
+        <% let items = info['items'] %>
 
-        <div class="tab">
-            <% info.forEach(element => { %>
-                <button class="tablinks" onclick="openTab(event, '<%= element.category_id %>')"><%= element.category_id %></button>
-            <% }); %>
-        </div>
+        <% cats.forEach(category => { %>
+            <h2> <%- category.name %> </h2>
+            <ul>
+                <% items.forEach(item => { %>
+                    <% if (item.category_id == category.category_id) { %>
+                        <li> <a href="/item/detail/<%- item.item_id %>"> <%- item.name %>  </a>  </li>
+                    <% } %>
+                <% }); %>
+            </ul>
+        <% }); %>
 
-        <div class="table">
-            <div class="tr">
-                <div class="td">Name</div>
-                <div class="td">Category</div>
-                <div class="td">Price</div>
-                <div class="td">Description</div>
-                <div class="td">Enabled</div>
-            </div>
-            <% info.forEach(element => { %>
-                <div id="<%= element.category_id %>" class="tabcontent">
-                    <h3><%= element.name %></h3>
-                    <div class="tr">
-                        <div class="td"><%= element.name %></div>
-                        <div class="td"><%= element.category_id %></div>
-                        <div class="td"><%= element.price %></div>
-                        <div class="td"><%= element.description%></div>
-                        <div class="td"><%= element.is_enabled %></div>
-                    </div>
-                </div>
-            <% }); %>
-        </div>
+        
     </div>
 
 </body>
-<script>
-function openTab(evt, category) {
-  var i, tabcontent, tablinks;
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-  document.getElementById(category).style.display = "block";
-  evt.currentTarget.className += " active";
-}
-</script>
 </html>

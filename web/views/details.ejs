@@ -1,0 +1,69 @@
+<html>
+    <head>
+        <title>Test</title>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+        <script type="text/javascript" src="http://www.json.org/json2.js"></script>
+        <script type="text/javascript">
+          $(function() {
+
+            $.fn.postData = function () {
+                var frm = $(document.updateItem);
+                const id = <%- item[0].item_id %>;
+
+                var dta = {
+                    "item_id": id,
+                    "category_id": $('#category_id').val(),
+                    "name": $('#name').val(),
+                    "description": $('#description').val(),
+                    "price": $('#price').val(),
+                    "is_enabled": $('#is_enabled').val()
+                }
+
+                $.post(
+                    frm.attr("action"),
+                    dta,
+                    function(data) {
+                    alert("Response: " + data);
+                    },
+                    "json"
+                );
+            }; 
+
+          });
+        </script>
+     </head>
+     <body>
+        <h2>Details:</h2>
+        <br>
+        <div>
+            <p><strong>  Name:        </strong> <%- item[0].name %> </p>
+            <p><strong>  Category:    </strong> <%- item[0].category_id %> </p>
+            <p><strong>  Price:       </strong> <%- item[0].price %> </p>
+            <p><strong>  Description: </strong> <%- item[0].description %> </p>
+            <p><strong>  Enabled:     </strong> <%- item[0].is_enabled %> </p>
+        </div>
+
+        <div>
+            <form action="http://localhost:8080/item/update" method="post" name="updateItem">
+
+                <label for="category_id">Category:</label>
+                <input id="category_id" type="number" value="<%-item[0].category_id%>"><br>
+
+                <label for="name">Name:</label>
+                <input id="name"        type="text" value="<%-item[0].name%>" ><br>
+
+                <label for="description">Description:</label>
+                <input id="description" type="text" value="<%-item[0].description%>" ><br>
+
+                <label for="price">Price:</label>
+                <input id="price"       type="text" value="<%-item[0].price%>" ><br>
+
+                <label for="is_enabled">Enabled:</label>
+                <input id="is_enabled"  type="text" value="<%-item[0].is_enabled%>" ><br>
+
+                <input type="button" value="Submit" onclick="$(this).postData();">
+            </form>
+        </div>
+        
+     </body>
+</html>
