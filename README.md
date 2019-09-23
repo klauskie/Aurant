@@ -6,9 +6,12 @@
 >/item
 
     {
-        "rest_id":<number>,
+        "rest_id": <number>,
+        "category_id": <number>,
         "name": <string>,
-        "price": <string>
+        "description": <string>,
+        "price": <string>,
+        "is_enabled": <bool>
     }
 
 ## Item Update
@@ -16,8 +19,11 @@
 
     {
         "item_id": <number>,
+        "category_id": <number>,
         "name": <string>,
-        "price": <string>
+        "description": <string>,
+        "price": <string>,
+        "is_enabled": <bool>
     }
 
 ## New Order
@@ -57,6 +63,32 @@ Returns list of objects in the following structure:
             "is_enabled": <bool>
         }
     ]
+
+## Items Structure
+>Get Items by Restaurant ID -> /item/restaurant/{number}
+
+Returns categories and items according to restaurant id
+
+    {
+        "categories": [
+            {
+                "category_id": <number>,
+                "rest_id": <number>,
+                "name": <string>
+            }
+        ],
+        "items": [
+            {
+                "item_id": <number>,
+                "rest_id": <number>,
+                "category_id": <number>,
+                "name": <string>,
+                "description": <string>,
+                "price": <string>,
+                "is_enabled": <bool>
+            }
+        ]
+    }
 
 
 ## Order Structure
