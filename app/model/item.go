@@ -43,11 +43,22 @@ func (item *Item) GetData() ([]byte, error) {
 }
 
 // GetDataByRestID : call getAllItemsByRestID
+// Append categories and items
 func (item *Item) GetDataByRestID(id string) ([]byte, error) {
 
 	usable_id, _ := strconv.Atoi(id)
 
-	data, err := getAllItemsByRestID(usable_id)
+	items, err := getAllItemsByRestID(usable_id)
+	cats, err := getCategoriesByRestID(usable_id)
+
+	data := struct{
+		Categories []*Category `json:"categories"`
+		Items 	   []*Item 	   `json:"items"`
+	}{
+		Categories:cats,
+		Items:items,
+	}
+
 	if err != nil {
 		log.Fatal("getAllItems error: ", err)
 	}

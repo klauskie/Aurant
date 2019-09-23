@@ -26,6 +26,8 @@ func main() {
 	r.HandleFunc("/item/category", controller.SetCategory).Methods("POST")
 	r.HandleFunc("/item/category/restaurant/{rest_id}", controller.GetCategoriesByRestaurant).Methods("GET")
 
+	r.HandleFunc("/test", testHandler).Methods("GET")
+
 	r.HandleFunc("/order", controller.GetOrders).Methods("GET")
 	r.HandleFunc("/order", controller.SetOrder).Methods("POST")
 	r.HandleFunc("/order/update", controller.UpdateOrderState).Methods("POST")
@@ -36,4 +38,12 @@ func main() {
 	http.Handle("/", r)
 	fmt.Println("Starting up on 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func testHandler(w http.ResponseWriter, r *http.Request) {
+
+	//vars := mux.Vars(r)
+	params := r.URL.Query()
+
+	fmt.Fprint(w, params)
 }
