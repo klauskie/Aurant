@@ -162,7 +162,10 @@ func (item *Item) DeleteData(id string) ([]byte, error) {
 }
 
 // DeleteData :
-func (item *Item) Enabletor(action bool) ([]byte, error) {
+func (item *Item) Enabletor(item_id string, action bool) ([]byte, error) {
+
+	usableID, _ := strconv.Atoi(item_id)
+	item.ID = usableID
 
 	data, err := item.enableOrDisable(action)
 	if err != nil {

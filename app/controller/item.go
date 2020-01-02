@@ -6,8 +6,42 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strconv"
 )
+
+// ItemRouter : Entry point for get requests
+func ItemRouterGet(w http.ResponseWriter, r *http.Request) {
+	var item model.Item
+
+	qParams := mux.Vars(r)
+
+	itemId := qParams["item_id"]
+	action := qParams["action"]
+
+	var output []byte
+	var err error
+
+	switch action {
+	case "detail":
+		output, err = item.GetDataByID(qParams["item_id"])
+		break
+	case "delete":
+		output, err = item.DeleteData(itemId)
+		break
+	case "enable":
+		output, err = item.Enabletor(itemId, true)
+		break
+	case "disable":
+		output, err = item.Enabletor(itemId, false)
+		break
+	}
+
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
 
 // GetItems : List of items
 func GetItems(w http.ResponseWriter, r *http.Request) {
@@ -95,53 +129,4 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintln(w, "yey")
-}
-
-// DeleteItem : delete item by ID
-func DeleteItem(w http.ResponseWriter, r *http.Request) {
-	var item model.Item
-
-	vars := mux.Vars(r)
-
-	output, err := item.DeleteData(vars["item_id"])
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
-
-	w.Header().Set("content-type", "application/json")
-	w.Write(output)
-}
-
-// EnableItem : enable item by id
-func EnableItem(w http.ResponseWriter, r *http.Request) {
-	var item model.Item
-
-	vars := mux.Vars(r)
-	usableID, _ := strconv.Atoi(vars["item_id"])
-	item.ID = usableID
-
-	output, err := item.Enabletor(true)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
-
-	w.Header().Set("content-type", "application/json")
-	w.Write(output)
-}
-
-// DisableItem : disable item by id
-func DisableItem(w http.ResponseWriter, r *http.Request) {
-	var item model.Item
-
-	vars := mux.Vars(r)
-	usableID, _ := strconv.Atoi(vars["item_id"])
-	item.ID = usableID
-
-	output, err := item.Enabletor(false)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
-
-	w.Header().Set("content-type", "application/json")
-	w.Write(output)
 }
