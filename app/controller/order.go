@@ -14,7 +14,9 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 
 	output, err := order.GetData()
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -26,7 +28,9 @@ func SetOrder(w http.ResponseWriter, r *http.Request) {
 
 	err := order.SetData(r.Body)
 	if err != nil {
-		log.Fatal("Insertion error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 }
 
@@ -36,7 +40,9 @@ func UpdateOrderState(w http.ResponseWriter, r *http.Request) {
 
 	err := order.SetNewState(r.Body)
 	if err != nil {
-		log.Fatal("Update error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 }
 
@@ -48,7 +54,9 @@ func GetOrdersByState(w http.ResponseWriter, r *http.Request) {
 
 	output, err := order.GetDataByRestIDAndState(vars[config.TAG_RESTAURANT_ID], vars[config.TAG_STATE])
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -62,7 +70,9 @@ func UpdateOrderStateIncrement(w http.ResponseWriter, r *http.Request) {
 
 	err := order.UpdateStatusByOne(vars[config.TAG_ORDER_ID])
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 }
 
@@ -74,7 +84,9 @@ func GetOrdersByClientAndRest(w http.ResponseWriter, r *http.Request) {
 
 	output, err := order.GetDataByClientAndRestID(vars[config.TAG_EMAIL], vars[config.TAG_RESTAURANT_ID])
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)

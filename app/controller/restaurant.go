@@ -12,7 +12,9 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 
 	output, err := res.GetData()
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -24,6 +26,8 @@ func SetRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	err := res.SetData(r.Body)
 	if err != nil {
-		log.Fatal("Insertion error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 }

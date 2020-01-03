@@ -18,7 +18,7 @@ func ItemRouterGet(w http.ResponseWriter, r *http.Request) {
 	action := qParams[config.TAG_ACTION]
 
 	var output []*model.Item
-	var err error
+	var err model.FoulError
 
 	switch action {
 	case "detail":
@@ -36,7 +36,9 @@ func ItemRouterGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -48,7 +50,9 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	output, err := item.GetData()
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -62,7 +66,9 @@ func GetItemsByRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	output, err := item.GetDataByRestID(vars[config.TAG_RESTAURANT_ID])
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -76,7 +82,9 @@ func GetItemByID(w http.ResponseWriter, r *http.Request) {
 
 	output, err := item.GetDataByID(vars[config.TAG_ITEM_ID])
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -90,7 +98,9 @@ func GetCategoriesByRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	output, err := item.GetCategoriesByRestaurant(vars[config.TAG_RESTAURANT_ID])
 	if err != nil {
-		log.Fatal("Internal error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 
 	model.JsonResponseAny(w, output)
@@ -103,7 +113,9 @@ func SetItem(w http.ResponseWriter, r *http.Request) {
 
 	err := item.SetData(r.Body)
 	if err != nil {
-		log.Fatal("Insertion error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 }
 
@@ -113,7 +125,9 @@ func SetCategory(w http.ResponseWriter, r *http.Request) {
 
 	err := cate.SetData(r.Body)
 	if err != nil {
-		log.Fatal("Insertion error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 }
 
@@ -124,6 +138,8 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	err := item.UpdateData(r.Body)
 
 	if err != nil {
-		log.Fatal("Update Item error: ", err)
+		log.Println(err)
+		model.JsonResponseError(w, err)
+		return
 	}
 }

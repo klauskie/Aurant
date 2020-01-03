@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"errors"
 	"log"
 	"net/http"
 
 	"../app/controller"
+	"../app/model"
 
 	"github.com/gorilla/mux"
 )
@@ -13,6 +15,8 @@ import (
 func main() {
 
 	// Every request must contain a valid API KEY (query param)
+	// MUST VALIDATE DATA
+	// SETTERS MUST VALIDATE DATA
 
 	r := mux.NewRouter()
 	r.HandleFunc("/restaurant", controller.GetRestaurants).Methods("GET")
@@ -51,8 +55,11 @@ func main() {
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
+	//vars := mux.Vars(r)
 	//params := r.URL.Query()
 
-	fmt.Fprint(w, vars)
+	err := errors.New("error message testing")
+
+	foul := &model.Foul{"TEST ERROR", err.Error(), model.TraceCall() }
+	model.JsonResponseAny(w, foul)
 }
