@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"../config"
 	"../model"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -17,12 +17,7 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }
 
 // SetOrder : Insert order
@@ -51,17 +46,12 @@ func GetOrdersByState(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	output, err := order.GetDataByRestIDAndState(vars["rest_id"], vars["state"])
+	output, err := order.GetDataByRestIDAndState(vars[config.TAG_RESTAURANT_ID], vars[config.TAG_STATE])
 	if err != nil {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }
 
 // UpdateOrderStateIncrement : update order status increment
@@ -70,7 +60,7 @@ func UpdateOrderStateIncrement(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	err := order.UpdateStatusByOne(vars["order_id"])
+	err := order.UpdateStatusByOne(vars[config.TAG_ORDER_ID])
 	if err != nil {
 		log.Fatal("Internal error: ", err)
 	}
@@ -82,15 +72,10 @@ func GetOrdersByClientAndRest(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	output, err := order.GetDataByClientAndRestID(vars["email"], vars["rest_id"])
+	output, err := order.GetDataByClientAndRestID(vars[config.TAG_EMAIL], vars[config.TAG_RESTAURANT_ID])
 	if err != nil {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }

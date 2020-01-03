@@ -11,12 +11,15 @@ type Foul struct {
 	Type     	  string      `json:"type"`
 }
 
-func jsonResponse(w http.ResponseWriter, output []*Restaurant) http.ResponseWriter {
-	w.Header().Set("content-type", "application/json")
+const CONTENT_TYPE  = "content-type"
+const APPLICATION_JSON = "application/json"
+
+// Writer for any type
+func JsonResponseAny(w http.ResponseWriter, output interface{}) {
+	w.Header().Set(CONTENT_TYPE, APPLICATION_JSON)
 	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(output)
 	if err != nil {
 		log.Fatal("Encoding error: ", err)
 	}
-	return w
 }

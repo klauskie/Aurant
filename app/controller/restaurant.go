@@ -2,7 +2,6 @@ package controller
 
 import (
 	"../model"
-	"encoding/json"
 	"log"
 	"net/http"
 )
@@ -16,12 +15,7 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }
 
 // SetRestaurant : Insert restaurant

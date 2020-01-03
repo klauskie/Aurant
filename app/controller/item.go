@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"../config"
 	"../model"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -14,8 +14,8 @@ func ItemRouterGet(w http.ResponseWriter, r *http.Request) {
 
 	qParams := mux.Vars(r)
 
-	itemId := qParams["item_id"]
-	action := qParams["action"]
+	itemId := qParams[config.TAG_ITEM_ID]
+	action := qParams[config.TAG_ACTION]
 
 	var output []*model.Item
 	var err error
@@ -39,12 +39,7 @@ func ItemRouterGet(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }
 
 // GetItems : List of items
@@ -56,12 +51,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }
 
 // GetItemsByRestaurant : List of items by restaurant ID and its categories
@@ -70,33 +60,27 @@ func GetItemsByRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	output, err := item.GetDataByRestID(vars["rest_id"])
+	output, err := item.GetDataByRestID(vars[config.TAG_RESTAURANT_ID])
 	if err != nil {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }
 
 // GetItemByID : item detail by ID
-/*func GetItemByID(w http.ResponseWriter, r *http.Request) {
+func GetItemByID(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
 
 	vars := mux.Vars(r)
 
-	output, err := item.GetDataByID(vars["item_id"])
+	output, err := item.GetDataByID(vars[config.TAG_ITEM_ID])
 	if err != nil {
-		log.Fatal("Encoding error: ", err)
+		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.Write(output)
-}*/
+	model.JsonResponseAny(w, output)
+}
 
 // GetCategoriesByRestaurant : return categories grouped by category_id
 func GetCategoriesByRestaurant(w http.ResponseWriter, r *http.Request) {
@@ -104,17 +88,12 @@ func GetCategoriesByRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	output, err := item.GetCategoriesByRestaurant(vars["rest_id"])
+	output, err := item.GetCategoriesByRestaurant(vars[config.TAG_RESTAURANT_ID])
 	if err != nil {
 		log.Fatal("Internal error: ", err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(output)
-	if err != nil {
-		log.Fatal("Encoding error: ", err)
-	}
+	model.JsonResponseAny(w, output)
 }
 
 
