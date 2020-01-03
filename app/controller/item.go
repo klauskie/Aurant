@@ -2,7 +2,7 @@ package controller
 
 import (
 	"../model"
-	"fmt"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -17,30 +17,34 @@ func ItemRouterGet(w http.ResponseWriter, r *http.Request) {
 	itemId := qParams["item_id"]
 	action := qParams["action"]
 
-	var output []byte
+	var output []*model.Item
 	var err error
 
 	switch action {
 	case "detail":
-		output, err = item.GetDataByID(qParams["item_id"])
+		output, err = item.GetDataByID(itemId)
 		break
 	case "delete":
-		output, err = item.DeleteData(itemId)
+		err = item.DeleteData(itemId)
 		break
 	case "enable":
-		output, err = item.Enabletor(itemId, true)
+		err = item.Enabletor(itemId, true)
 		break
 	case "disable":
-		output, err = item.Enabletor(itemId, false)
+		err = item.Enabletor(itemId, false)
 		break
 	}
 
 	if err != nil {
-		log.Fatal("Encoding error: ", err)
+		log.Fatal("Internal error: ", err)
 	}
 
 	w.Header().Set("content-type", "application/json")
-	w.Write(output)
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
 }
 
 // GetItems : List of items
@@ -49,14 +53,18 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	output, err := item.GetData()
 	if err != nil {
-		log.Fatal("Encoding error: ", err)
+		log.Fatal("Internal error: ", err)
 	}
 
 	w.Header().Set("content-type", "application/json")
-	w.Write(output)
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
 }
 
-// GetItemsByRestaurant : List of items by restaurant
+// GetItemsByRestaurant : List of items by restaurant ID and its categories
 func GetItemsByRestaurant(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
 
@@ -64,15 +72,19 @@ func GetItemsByRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	output, err := item.GetDataByRestID(vars["rest_id"])
 	if err != nil {
-		log.Fatal("Encoding error: ", err)
+		log.Fatal("Internal error: ", err)
 	}
 
 	w.Header().Set("content-type", "application/json")
-	w.Write(output)
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
 }
 
 // GetItemByID : item detail by ID
-func GetItemByID(w http.ResponseWriter, r *http.Request) {
+/*func GetItemByID(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
 
 	vars := mux.Vars(r)
@@ -84,7 +96,7 @@ func GetItemByID(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
-}
+}*/
 
 // GetCategoriesByRestaurant : return categories grouped by category_id
 func GetCategoriesByRestaurant(w http.ResponseWriter, r *http.Request) {
@@ -94,11 +106,15 @@ func GetCategoriesByRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	output, err := item.GetCategoriesByRestaurant(vars["rest_id"])
 	if err != nil {
-		log.Fatal("Encoding error: ", err)
+		log.Fatal("Internal error: ", err)
 	}
 
 	w.Header().Set("content-type", "application/json")
-	w.Write(output)
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
 }
 
 
@@ -106,16 +122,20 @@ func GetCategoriesByRestaurant(w http.ResponseWriter, r *http.Request) {
 func SetItem(w http.ResponseWriter, r *http.Request) {
 	var item model.Item
 
-	item.SetData(r.Body)
-	fmt.Fprintln(w, "yey")
+	err := item.SetData(r.Body)
+	if err != nil {
+		log.Fatal("Insertion error: ", err)
+	}
 }
 
 // SetCategory : Insert category
 func SetCategory(w http.ResponseWriter, r *http.Request) {
 	var cate model.Category
 
-	cate.SetData(r.Body)
-	fmt.Fprintln(w, "yey")
+	err := cate.SetData(r.Body)
+	if err != nil {
+		log.Fatal("Insertion error: ", err)
+	}
 }
 
 // UpdateItem : Update item by ID
@@ -125,8 +145,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	err := item.UpdateData(r.Body)
 
 	if err != nil {
-		fmt.Fprintln(w, err)
+		log.Fatal("Update Item error: ", err)
 	}
-
-	fmt.Fprintln(w, "yey")
 }

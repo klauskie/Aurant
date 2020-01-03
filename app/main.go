@@ -40,11 +40,7 @@ func main() {
 	// {email} can be used as a gate for SQL injection
 	r.HandleFunc("/order/client/{email}/restaurant/{rest_id:[0-9]+}", controller.GetOrdersByClientAndRest).Methods("GET")
 
-	r.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "sign in")
-	})
-
-	r.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/getApiKey", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "sign up")
 	})
 

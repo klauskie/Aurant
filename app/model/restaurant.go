@@ -39,17 +39,13 @@ func (res *Restaurant) insertIntoDB() error {
 }
 
 // GetData : call getAllRestaurants
-func (res *Restaurant) GetData() ([]byte, error) {
+func (res *Restaurant) GetData() ([]*Restaurant, error) {
 
 	data, err := getAllRestaurants()
 	if err != nil {
 		log.Fatal("getAllRestaurants error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 
 }
 

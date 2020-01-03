@@ -34,20 +34,16 @@ const (
 )
 
 // GetData : get all orders
-func (cart *Cart) GetData() ([]byte, error) {
+func (cart *Cart) GetData() ([]*Cart, error) {
 	data, err := getAllOrders()
 	if err != nil {
 		log.Fatal("getAllOrders error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 }
 
 // GetDataByRestIDAndState : call getAllOrdersByRestIDAndState
-func (order *Cart) GetDataByRestIDAndState(rest_id string, state string) ([]byte, error) {
+func (order *Cart) GetDataByRestIDAndState(rest_id string, state string) ([]*Cart, error) {
 
 	usableID, _ := strconv.Atoi(rest_id)
 
@@ -55,15 +51,11 @@ func (order *Cart) GetDataByRestIDAndState(rest_id string, state string) ([]byte
 	if err != nil {
 		log.Fatal("getAllOrdersByRestIDAndState error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 }
 
 // GetDataByClientAndRestID : call getAllOrdersByClientAndRestID
-func (order *Cart) GetDataByClientAndRestID(email string, restID string) ([]byte, error) {
+func (order *Cart) GetDataByClientAndRestID(email string, restID string) ([]*Cart, error) {
 
 	usableID, _ := strconv.Atoi(restID)
 
@@ -71,27 +63,19 @@ func (order *Cart) GetDataByClientAndRestID(email string, restID string) ([]byte
 	if err != nil {
 		log.Fatal("getAllOrdersByClientAndRestID error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 }
 
 // UpdateStatusByOne : update Status by one
-func (order *Cart) UpdateStatusByOne(orderID string) ([]byte, error) {
+func (order *Cart) UpdateStatusByOne(orderID string) error {
 
 	usableID, _ := strconv.Atoi(orderID)
 
-	data, err := incrementStateByOne(usableID)
+	err := incrementStateByOne(usableID)
 	if err != nil {
 		log.Fatal("incrementStateByOne error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return err
 }
 
 // SetData : post stream into order table
@@ -209,27 +193,23 @@ func (order *Cart) updateState() error {
 	return nil
 }
 
-func incrementStateByOne (cartID int) (map[string]string, error) {
+func incrementStateByOne (cartID int) error {
 
 	var actualState int
-	message := make(map[string]string)
 
 	row := config.DB.QueryRow("SELECT state_id FROM CART WHERE cart_id = ?", cartID)
 	err := row.Scan(&actualState)
 
 	if err != nil && err.Error() != "sql: no rows in result set" {
-		message["state"] = ""
-		return message, err
+		return err
 	}
 
 	if actualState <= CLOSED {
 		actualState += 1
 		_, err := config.DB.Exec("UPDATE CART SET state_id = ?, datetime = ? WHERE cart_id = ?", actualState, time.Now().Format(timeLayout), cartID)
 		if err != nil {
-			message["state"] = ""
-			return message, err
+			return err
 		}
 	}
-	message["state"] = strconv.Itoa(actualState)
-	return message,nil
+	return nil
 }

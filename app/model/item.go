@@ -28,33 +28,32 @@ type Category struct {
 	Name    	  string      `json:"name"`
 }
 
+// Categories and Items
+type Bundle struct {
+	Categories []*Category `json:"categories"`
+	Items 	   []*Item 	   `json:"items"`
+}
+
 // GetData : call getAllItems
-func (item *Item) GetData() ([]byte, error) {
+func (item *Item) GetData() ([]*Item, error) {
 
 	data, err := getAllItems()
 	if err != nil {
 		log.Fatal("getAllItems error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 }
 
 // GetDataByRestID : call getAllItemsByRestID
 // Append categories and items
-func (item *Item) GetDataByRestID(id string) ([]byte, error) {
+func (item *Item) GetDataByRestID(id string) (Bundle, error) {
 
 	usable_id, _ := strconv.Atoi(id)
 
 	items, err := getAllItemsByRestID(usable_id)
 	cats, err := getCategoriesByRestID(usable_id)
 
-	data := struct{
-		Categories []*Category `json:"categories"`
-		Items 	   []*Item 	   `json:"items"`
-	}{
+	data := Bundle {
 		Categories:cats,
 		Items:items,
 	}
@@ -62,15 +61,11 @@ func (item *Item) GetDataByRestID(id string) ([]byte, error) {
 	if err != nil {
 		log.Fatal("getAllItems error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 }
 
 // GetDataByID : call getItemByID
-func (item *Item) GetDataByID(id string) ([]byte, error) {
+func (item *Item) GetDataByID(id string) ([]*Item, error) {
 
 	usableID, _ := strconv.Atoi(id)
 
@@ -78,55 +73,49 @@ func (item *Item) GetDataByID(id string) ([]byte, error) {
 	if err != nil {
 		log.Fatal("getAllItems error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 }
 
 // GetCategoriesByRestaurant
-func (item *Item) GetCategoriesByRestaurant(id string) ([]byte, error) {
+func (item *Item) GetCategoriesByRestaurant(id string) ([]*Category, error) {
 	usableID, _ := strconv.Atoi(id)
 
 	data, err := getCategoriesByRestID(usableID)
 	if err != nil {
 		log.Fatal("getCategoriesByRestID error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return data, err
 }
 
 // SetData : post stream into db
-func (item *Item) SetData(stream io.Reader) {
+func (item *Item) SetData(stream io.Reader) error {
 	decoder := json.NewDecoder(stream)
 	err := decoder.Decode(&item)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	log.Println(item.Name)
 
 	err = item.insertIntoDB()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // SetData : post stream into db
-func (cate *Category) SetData(stream io.Reader) {
+func (cate *Category) SetData(stream io.Reader) error {
 	decoder := json.NewDecoder(stream)
 	err := decoder.Decode(&cate)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = cate.insertIntoDB()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // UpdateData : post stream into db
@@ -146,36 +135,28 @@ func (item *Item) UpdateData(stream io.Reader) error {
 }
 
 // DeleteData :
-func (item *Item) DeleteData(id string) ([]byte, error) {
+func (item *Item) DeleteData(id string) error {
 
 	usableID, _ := strconv.Atoi(id)
 
-	data, err := deleteItem(usableID)
+	err := deleteItem(usableID)
 	if err != nil {
 		log.Fatal("deleteItem error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return err
 }
 
 // DeleteData :
-func (item *Item) Enabletor(item_id string, action bool) ([]byte, error) {
+func (item *Item) Enabletor(item_id string, action bool) error {
 
 	usableID, _ := strconv.Atoi(item_id)
 	item.ID = usableID
 
-	data, err := item.enableOrDisable(action)
+	err := item.enableOrDisable(action)
 	if err != nil {
 		log.Fatal("deleteItem error: ", err)
 	}
-	output, err2 := json.Marshal(data)
-	if err2 != nil {
-		log.Fatal("Encoding error: ", err2)
-	}
-	return output, err2
+	return err
 }
 
 func (item *Item) insertIntoDB() error {
@@ -256,30 +237,22 @@ func scanRows(rows *sql.Rows) ([]*Item, error) {
 }
 
 
-func deleteItem(id int) (map[string]string,error) {
-
-	message := make(map[string]string)
+func deleteItem(id int) error {
 
 	_, err := config.DB.Exec("DELETE FROM ITEM where item_id = ?", id)
 	if err != nil {
-		message["success"] = "false"
-		return message, err
+		return err
 	}
-	message["success"] = "true"
-	return message, nil
+	return nil
 }
 
-func (item *Item) enableOrDisable(action bool) (map[string]string,error) {
-
-	message := make(map[string]string)
+func (item *Item) enableOrDisable(action bool) error {
 
 	_, err := config.DB.Exec("UPDATE ITEM SET is_enabled = ? where item_id = ?", action, item.ID)
 	if err != nil {
-		message["success"] = "false"
-		return message, err
+		return err
 	}
-	message["success"] = "true"
-	return message, nil
+	return nil
 }
 
 // getCategoriesByRestID : return map with categories

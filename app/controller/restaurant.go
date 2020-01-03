@@ -2,7 +2,7 @@ package controller
 
 import (
 	"../model"
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 )
@@ -13,11 +13,15 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 
 	output, err := res.GetData()
 	if err != nil {
-		log.Fatal("Encoding error: ", err)
+		log.Fatal("Internal error: ", err)
 	}
 
 	w.Header().Set("content-type", "application/json")
-	w.Write(output)
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		log.Fatal("Encoding error: ", err)
+	}
 }
 
 // SetRestaurant : Insert restaurant
@@ -26,8 +30,6 @@ func SetRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	err := res.SetData(r.Body)
 	if err != nil {
-		fmt.Fprintln(w, err)
-		return
+		log.Fatal("Insertion error: ", err)
 	}
-	fmt.Fprintln(w, "yey")
 }
